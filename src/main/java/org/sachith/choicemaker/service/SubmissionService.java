@@ -20,11 +20,13 @@ public class SubmissionService {
 
     private final SimpMessagingTemplate template;
     private final SubmissionRepository submissionRepository;
+    private final SessionService sessionService;
     final private ObjectMapper objectMapper = new ObjectMapper();
 
-    public SubmissionService(SimpMessagingTemplate template, SubmissionRepository submissionRepository) {
+    public SubmissionService(SimpMessagingTemplate template, SubmissionRepository submissionRepository, SessionService sessionService) {
         this.template = template;
         this.submissionRepository = submissionRepository;
+        this.sessionService = sessionService;
     }
 
     public Submission createSubmission(SubmissionRequest submissionRequest) throws MalformedSubmissionFoundException, SocketCommunicationFailureException {
@@ -44,6 +46,7 @@ public class SubmissionService {
         selectedSubmission.setSelected(true);
         submissionRepository.save(selectedSubmission);
         broadcastSubmissionEvent(selectedSubmission, EventType.END_SESSION);
+        sessionService.terminateSession(selectedSubmission.getSessionId());
         return selectedSubmission;
     }
 

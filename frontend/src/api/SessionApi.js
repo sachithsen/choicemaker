@@ -33,3 +33,14 @@ export const getAllSessions = async (username) => {
         throw error;
     }
 };
+
+export const getSessionSummary = async (username) => {
+    try {
+        const response = await axios.get(`${API_BASE_URL}/sessionSummary`, {
+            params: {username}
+        });
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+};

@@ -43,11 +43,6 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }*/
 
-    @GetMapping("/welcome")
-    public String welcome() {
-
-        return "Welcome this endpoint is not secure";
-    }
 
     @GetMapping("/user")
     public User addNewUser(@RequestParam String username) {
@@ -59,10 +54,10 @@ public class AuthController {
         return userInfoService.getAllUsers();
     }
 
-    /*@GetMapping("/user")
-    public String addNewUser(@RequestBody User user) {
-        return service.addUser(user);
-    }*/
+    @PostMapping("/user")
+    public User addNewUser(@RequestBody User user) {
+        return userInfoService.addUser(user);
+    }
 
     /*@GetMapping("/user/profile")
     @PreAuthorize("hasAuthority('ROLE_USER')")

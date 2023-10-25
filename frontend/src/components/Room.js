@@ -19,24 +19,20 @@ import CardMedia from "@mui/material/CardMedia";
 import { useNavigate, useLocation } from "react-router-dom";
 import SockJsClient from "react-stomp";
 import { createSubmission, selectSubmission } from "../api/SubmissionApi";
+import { styled } from "@mui/material/styles";
 
 const SOCKET_URL = "http://localhost:8080/ws-message";
 
 const styles = {
   fabAdd: {
     position: "fixed",
-    top: "20px",
+    top: "80px",
     right: "20px",
-  },
-  fabSelect: {
-    position: "fixed",
-    top: "20px",
-    right: "200px",
   },
   fabClose: {
     position: "fixed",
-    bottom: "20px",
-    right: "20px",
+    top: "80px",
+    right: "200px",
   },
 };
 
@@ -56,6 +52,7 @@ function Room() {
   const sockJsClientRef = React.useRef(null);
   const [selectedCard, setSelectedCard] = React.useState(null);
   const [openClosingDialog, setOpenClosingDialog] = React.useState(false);
+  const [endSessionVisible, setEndSessionVisible] = React.useState(false);
   const [currentSession, setCurrentSession] = React.useState(null);
   let currentSessionId = null;
   const { state } = useLocation();
@@ -63,6 +60,15 @@ function Room() {
   let onConnected = () => {
     console.log("Web socket Connected!!");
   };
+
+  const BootstrapDialog = styled(Dialog)(({ theme }) => ({
+    "& .MuiDialogContent-root": {
+      padding: theme.spacing(2),
+    },
+    "& .MuiDialogActions-root": {
+      padding: theme.spacing(1),
+    },
+  }));
 
   let onMessageReceived = (msg) => {
     console.log(msg);
@@ -103,22 +109,29 @@ function Room() {
     }
   };
 
-  const handleCloseDialog = () => {
+  // const handleCloseDialog = () => {
+  //   setOpenClosingDialog(false);
+  //   navigate("/", { replace: true });
+  //   // remove all session related data and do session termination
+  // };
+
+  const handleSessionTermination = () => {
+    localStorage.setItem("currentSession", null);
+    localStorage.setItem("cards", []);
     setOpenClosingDialog(false);
     navigate("/", { replace: true });
     // remove all session related data and do session termination
   };
 
   React.useEffect(() => {
-    console.log("Imported state : ", state);
     const currentSession = JSON.parse(localStorage.getItem("currentSession"));
+    const currentUser = JSON.parse(localStorage.getItem("currentUser"));
     setCurrentSession(currentSession);
     if (currentSession && currentSession.sessionId) {
       currentSessionId = currentSession.sessionId;
     }
-    const savedCards = JSON.parse(localStorage.getItem("cards"));
-    if (savedCards) {
-      setCards(savedCards);
+    if (currentSession.sessionAdmin === currentUser.username) {
+      setEndSessionVisible(true);
     }
   }, []);
 
@@ -203,15 +216,19 @@ function Room() {
           <DiningIcon sx={{ mr: 1 }} />
           Add Choice
         </Fab>
-        <Fab
-          color="error"
-          variant="extended"
-          style={styles.fabSelect}
-          onClick={onCloseClick}
-        >
-          <CloseIcon sx={{ mr: 1 }} />
-          Close Session
-        </Fab>
+        <div>
+          {endSessionVisible && (
+            <Fab
+              color="error"
+              variant="extended"
+              style={styles.fabClose}
+              onClick={onCloseClick}
+            >
+              <CloseIcon sx={{ mr: 1 }} />
+              END Session
+            </Fab>
+          )}
+        </div>
         <div style={{ display: "flex", flexWrap: "wrap", marginTop: "80px" }}>
           {cards.map((card, index) => (
             <div
@@ -273,20 +290,31 @@ function Room() {
         </DialogActions>
       </Dialog> */}
 
-      <Dialog open={openClosingDialog} onClose={handleCloseDialog}>
+      <BootstrapDialog
+        open={openClosingDialog}
+        onClose={handleSessionTermination}
+      >
+        <DialogTitle>{"TODAY'S RESTURENT"}</DialogTitle>
         <DialogContent>{selectedCard}</DialogContent>
-      </Dialog>
+        <Button
+          variant="outlined"
+          onClick={handleSessionTermination}
+          color="success"
+        >
+          DONE
+        </Button>
+      </BootstrapDialog>
       <div>
-      <SockJsClient
-            url={SOCKET_URL}
-            ref={sockJsClientRef}
-            topics={[`/topic/${state.sessionId}`]}
-            onConnect={onConnected}
-            onDisconnect={console.log("Disconnected!")}
-            onMessage={(msg) => onMessageReceived(msg)}
-            autoReconnect={true}
-            debug={false}
-          />
+        <SockJsClient
+          url={SOCKET_URL}
+          ref={sockJsClientRef}
+          topics={[`/topic/${state.sessionId}`]}
+          onConnect={onConnected}
+          onDisconnect={console.log("Disconnected!")}
+          onMessage={(msg) => onMessageReceived(msg)}
+          autoReconnect={true}
+          debug={false}
+        />
       </div>
     </div>
   );

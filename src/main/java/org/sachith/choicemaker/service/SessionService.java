@@ -5,16 +5,17 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.sachith.choicemaker.exception.*;
 import org.sachith.choicemaker.model.EventType;
 import org.sachith.choicemaker.model.Session;
+import org.sachith.choicemaker.model.Submission;
 import org.sachith.choicemaker.model.dto.SessionRequest;
 import org.sachith.choicemaker.model.dto.SocketEvent;
+import org.sachith.choicemaker.model.dto.SummaryRecord;
 import org.sachith.choicemaker.repository.SessionRepository;
+import org.sachith.choicemaker.repository.SubmissionRepository;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.sql.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -23,12 +24,14 @@ public class SessionService {
 
     private final SimpMessagingTemplate template;
     private final SessionRepository sessionRepository;
+    private final SubmissionRepository submissionRepository;
     final private ObjectMapper objectMapper = new ObjectMapper();
     private static final Map<String, Session> activeSessions = new ConcurrentHashMap<>();
 
-    public SessionService(SimpMessagingTemplate template, SessionRepository sessionRepository) {
+    public SessionService(SimpMessagingTemplate template, SessionRepository sessionRepository, SubmissionRepository submissionRepository) {
         this.template = template;
         this.sessionRepository = sessionRepository;
+        this.submissionRepository = submissionRepository;
     }
 
     public Session createSession(SessionRequest sessionRequest) throws SessionCreationException {
@@ -88,5 +91,35 @@ public class SessionService {
             return session;
         else
             throw new SessionNotFoundException("Session not found for the ID : " + sessionId);
+    }
+
+    public List<SummaryRecord> getAllSessionSummary(String username) {
+        List<SummaryRecord> summaryRecords = new ArrayList<>();
+        List<Session> allSessions = sessionRepository.findAll();
+        allSessions.sort(Comparator.comparing(Session::getSessionDate).reversed());
+        int count = 0;
+        for (Session session : allSessions) {
+            SummaryRecord summaryRecord = new SummaryRecord();
+            if (session != null && !session.getIsActive() && session.getParticipants() != null &&
+                    session.getParticipants().contains(username)) {
+                if (count > 9) break;
+                else ++count;
+                summaryRecord.setId(session.getId());
+                summaryRecord.setAdmin(session.getSessionAdmin());
+                summaryRecord.setDate(session.getSessionDate().toString());
+                summaryRecord.setName(session.getSessionName());
+                summaryRecord.setParticipants(Arrays.stream(session.getParticipants().split(",")).toList());
+                List<Submission> sessionSubmissions = submissionRepository.findAllBySessionId(session.getSessionId());
+                List<String> resturentList = new ArrayList<>();
+                for (Submission submission : sessionSubmissions) {
+                    resturentList.add(submission.getText());
+                    if (submission.isSelected())
+                        summaryRecord.setWinner(submission.getText());
+                }
+                summaryRecord.setRestaurants(resturentList);
+                summaryRecords.add(summaryRecord);
+            }
+        }
+        return summaryRecords;
     }
 }

@@ -10,6 +10,7 @@ import org.sachith.choicemaker.exception.SessionCreationException;
 import org.sachith.choicemaker.exception.SessionNotFoundException;
 import org.sachith.choicemaker.model.Session;
 import org.sachith.choicemaker.model.dto.SessionRequest;
+import org.sachith.choicemaker.model.dto.SummaryRecord;
 import org.sachith.choicemaker.service.SessionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -66,5 +67,18 @@ public class SessionController {
                                                        @RequestParam String sessionId) throws SessionNotFoundException {
         Session session = sessionService.getSessionBySessionId(sessionId);
         return ResponseEntity.ok(session);
+    }
+
+    @Operation(summary = "Get all the sessions for a user. User should be a " +
+            "participant of the session when it creates. To populate the summary")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Retrieve list of sessions",
+                    content = { @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = List.class)) })})
+    @GetMapping("/sessionSummary")
+    public ResponseEntity<List<SummaryRecord>> getAllSessionsByUser(@Parameter(description = "Username of user")
+                                                                    @RequestParam String username) {
+        List<SummaryRecord> summarySessions = sessionService.getAllSessionSummary(username);
+        return ResponseEntity.ok(summarySessions);
     }
 }

@@ -17,11 +17,24 @@ import OutlinedInput from "@mui/material/OutlinedInput";
 import InputLabel from "@mui/material/InputLabel";
 import MenuItem from "@mui/material/MenuItem";
 import FormControl from "@mui/material/FormControl";
+import { styled } from "@mui/material/styles";
+import Table from "@mui/material/Table";
+import TableBody from "@mui/material/TableBody";
+import TableCell, { tableCellClasses } from "@mui/material/TableCell";
+import TableContainer from "@mui/material/TableContainer";
+import TableHead from "@mui/material/TableHead";
+import TableRow from "@mui/material/TableRow";
+import Chip from "@mui/material/Chip";
 import Select from "@mui/material/Select";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "./../AuthContext";
 import { getAllUsers } from "./../../api/UserApi";
-import { getAllSessions, createSession, getSessionById } from "../../api/SessionApi";
+import {
+  getAllSessions,
+  createSession,
+  getSessionById,
+  getSessionSummary,
+} from "../../api/SessionApi";
 
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;
@@ -48,7 +61,28 @@ function Home() {
   const fullScreen = useMediaQuery(theme.breakpoints.down("md"));
   const [currentUser, setCurrentUser] = React.useState(null);
   const [sessionUsers, setSessionUsers] = React.useState("");
-  const [currentSessionId, setCurrentSessionId] = React.useState(""); 
+  const [currentSessionId, setCurrentSessionId] = React.useState("");
+  const [rows, setRows] = React.useState([]);
+
+  const StyledTableCell = styled(TableCell)(({ theme }) => ({
+    [`&.${tableCellClasses.head}`]: {
+      backgroundColor: theme.palette.common.black,
+      color: theme.palette.common.white,
+      whiteSpace: "nowrap",
+      whidth: "90%",
+    },
+    [`&.${tableCellClasses.body}`]: {
+      fontSize: 15,
+      whiteSpace: "nowrap",
+      whidth: "1px",
+    },
+  }));
+
+  const StyledTableRow = styled(TableRow)(({ theme }) => ({
+    "&:nth-of-type(odd)": {
+      backgroundColor: theme.palette.action.hover,
+    },
+  }));
 
   React.useEffect(() => {
     setCurrentUser(JSON.parse(localStorage.getItem("currentUser")));
@@ -70,6 +104,16 @@ function Home() {
         console.log("All active sessions : ", response);
         if (response) {
           setSessions(response);
+        }
+      })
+      .catch((error) => console.error("Error:", error));
+
+    //Get summary rows
+    getSessionSummary(user.username)
+      .then((response) => {
+        console.log("All records : ", response);
+        if (response) {
+          setRows(response);
         }
       })
       .catch((error) => console.error("Error:", error));
@@ -157,7 +201,7 @@ function Home() {
           paddingTop: 3 + "em",
         }}
       >
-        <Grid container>
+        <Grid container sx={{ marginBottom: 10 }}>
           <Grid
             item
             xs={6}
@@ -215,6 +259,59 @@ function Home() {
             </Card>
           </Grid>
         </Grid>
+        <Typography variant="h5" component="div" sx={{textAlign: "center", paddingBottom:2}}>
+          CHOICEMAKER HOSTORY OF YOUR LAST 10 SESSIONS
+        </Typography>
+        <TableContainer sx={{ margin: 1 }}>
+          <Table sx={{ minWidth: 700 }}>
+            <TableHead sx={{ width: 1, whiteSpace: "nowrap" }}>
+              <TableRow>
+                <StyledTableCell>ID</StyledTableCell>
+                <StyledTableCell align="left">Name</StyledTableCell>
+                <StyledTableCell align="left">Date</StyledTableCell>
+                <StyledTableCell align="left">Admin</StyledTableCell>
+                <StyledTableCell align="left">Participants</StyledTableCell>
+                <StyledTableCell align="left">Restaurants</StyledTableCell>
+                <StyledTableCell align="left">Winner</StyledTableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {rows.map((row) => (
+                <StyledTableRow key={row.id}>
+                  <StyledTableCell component="th" scope="row">
+                    {row.id}
+                  </StyledTableCell>
+                  <StyledTableCell align="left">{row.name}</StyledTableCell>
+                  <StyledTableCell align="left">{row.date}</StyledTableCell>
+                  <StyledTableCell align="left">{row.admin}</StyledTableCell>
+                  <StyledTableCell align="left">
+                    {row.participants.map((participant, index) => (
+                      <Chip
+                        key={index}
+                        label={participant}
+                        color="success"
+                        variant="outlined"
+                      />
+                    ))}
+                  </StyledTableCell>
+                  <StyledTableCell align="left">
+                    {row.restaurants.map((restaurant, index) => (
+                      <Chip
+                        key={index}
+                        label={restaurant}
+                        color="primary"
+                        variant="outlined"
+                      />
+                    ))}
+                  </StyledTableCell>
+                  <StyledTableCell align="left">
+                    <Chip label={row.winner} color="primary" />
+                  </StyledTableCell>
+                </StyledTableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
       </Box>
       <Dialog
         fullScreen={fullScreen}
