@@ -137,7 +137,7 @@ function Home() {
           localStorage.setItem("currentSession", JSON.stringify(response));
           setSessionId(response.sessionId);
         }
-        // TODO: Clear the local storage currentSession
+
         const data = { sessionId: response.sessionId };
         navigate("/session", { state: data });
       })
@@ -165,7 +165,7 @@ function Home() {
           localStorage.setItem("currentSession", JSON.stringify(response));
           setSessionId(response.sessionId);
         }
-        // TODO: Clear the local storage currentSession
+
         const data = { sessionId: response.sessionId };
         navigate("/session", { state: data });
       })

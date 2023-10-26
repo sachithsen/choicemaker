@@ -34,7 +34,6 @@ function Login() {
     const user = {
       username: data.get("username"),
       name: "First Last"
-      // Add other user details
     };
     login(user);
 
@@ -43,9 +42,6 @@ function Login() {
       password: data.get("password")
     };
 
-    // call /login endpoint
-    //auth user here and then get the user object by username
-    // Fetch user data when the component mounts
     authUser(data.get("username"))
     .then(response => {
       console.log("Response : ", response);
@@ -55,9 +51,7 @@ function Login() {
           response.authenticated
         );
         console.log("AuthResponse : ", authResponse);
-        // get user details and set in localStorage
         localStorage.setItem('accessToken', authResponse.token);
-        //Temp value
         localStorage.setItem('currentUser', JSON.stringify(response));
         navigate('/', {replace: true});
       }

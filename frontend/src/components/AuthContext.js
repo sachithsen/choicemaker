@@ -8,24 +8,20 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
 
   useEffect(() => {
-    // Check if the user is authenticated, e.g., by checking a token in localStorage
     const token = localStorage.getItem('accessToken');
     if (token) {
-      // Fetch user data or decode token as needed and set the user
-      // Example: setUser(decodedUser);
+      // token validation after security integration
     }
   }, []);
 
   const login = (userData) => {
-    // Perform your login logic here and set the user
-    // add to localstorage
+    //login
     setUser(userData);
   };
 
   const logout = () => {
-    // Clear the user data
+    // logout
     setUser(null);
-    // Clear the token or do any necessary cleanup
   };
 
   return (

@@ -109,18 +109,11 @@ function Room() {
     }
   };
 
-  // const handleCloseDialog = () => {
-  //   setOpenClosingDialog(false);
-  //   navigate("/", { replace: true });
-  //   // remove all session related data and do session termination
-  // };
-
   const handleSessionTermination = () => {
     localStorage.setItem("currentSession", null);
     localStorage.setItem("cards", []);
     setOpenClosingDialog(false);
     navigate("/", { replace: true });
-    // remove all session related data and do session termination
   };
 
   React.useEffect(() => {
@@ -143,16 +136,7 @@ function Room() {
     setOpenAdd(true);
   };
 
-  // const onRandomClick = () => {
-  //   const randomIndex = Math.floor(Math.random() * cards.length);
-  //   const randomCard = cards[randomIndex];
-
-  //   setHighlightedCard(randomCard);
-  //   setDisable(true);
-  // };
-
   const onCloseClick = () => {
-    //setCloseSession(true);
     const randomIndex = Math.floor(Math.random() * cards.length);
     const randomCard = cards[randomIndex];
     console.log("Card : ", randomCard.key);
@@ -165,23 +149,17 @@ function Room() {
       .catch((error) => console.error("Error:", error));
   };
 
-  // Function to send a message
   const sendMessage = () => {
     if (sockJsClientRef.current) {
       const jsonObject = {
         message: "Hello Sachith!! From Client.",
       };
 
-      // Convert the JSON object to a string
       const jsonMessage = JSON.stringify(jsonObject);
       sockJsClientRef.current.sendMessage("/app/sendMessage", jsonMessage);
     }
   };
 
-  // const handleClose = () => {
-  //   setCloseSession(false);
-  //   navigate("/", { replace: true });
-  // };
   const handleSubmit = () => {
     const session = JSON.parse(localStorage.getItem("currentSession"));
     const user = JSON.parse(localStorage.getItem("currentUser"));
@@ -247,7 +225,6 @@ function Room() {
         TransitionComponent={Transition}
         keepMounted
         open={openAdd}
-        // onClose={handleClose}
         aria-describedby="alert-dialog-slide-description"
       >
         <DialogTitle id="responsive-dialog-title">
@@ -272,23 +249,6 @@ function Room() {
           </Button>
         </DialogActions>
       </Dialog>
-      {/* <Dialog
-        open={openCloseSession}
-        TransitionComponent={Transition}
-        keepMounted
-        onClose={handleClose}
-        aria-describedby="alert-dialog-slide-description"
-      >
-        <DialogTitle>{"Closing Session?"}</DialogTitle>
-        <DialogContent>
-          <DialogContentText id="alert-dialog-slide-description">
-            Click close button to close the session for all the users.
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleClose}>Close</Button>
-        </DialogActions>
-      </Dialog> */}
 
       <BootstrapDialog
         open={openClosingDialog}
