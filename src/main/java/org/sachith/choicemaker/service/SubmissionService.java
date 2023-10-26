@@ -21,7 +21,7 @@ public class SubmissionService {
     private final SimpMessagingTemplate template;
     private final SubmissionRepository submissionRepository;
     private final SessionService sessionService;
-    final private ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     public SubmissionService(SimpMessagingTemplate template, SubmissionRepository submissionRepository, SessionService sessionService) {
         this.template = template;
@@ -50,7 +50,7 @@ public class SubmissionService {
         return selectedSubmission;
     }
 
-    private void broadcastSubmissionEvent(Submission submission, EventType eventType) throws MalformedSubmissionFoundException, SocketCommunicationFailureException {
+    void broadcastSubmissionEvent(Submission submission, EventType eventType) throws MalformedSubmissionFoundException, SocketCommunicationFailureException {
         String submissionData;
         try {
             submissionData = objectMapper.writeValueAsString(submission);
